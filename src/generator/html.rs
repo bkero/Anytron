@@ -159,7 +159,7 @@ const INDEX_TEMPLATE: &str = r#"<!DOCTYPE html>
     </main>
 
     <footer class="footer">
-        <p>Powered by <a href="https://github.com/anytron/anytron">Anytron</a></p>
+        <p>Powered by <a href="https://github.com/bkero/anytron">Anytron</a></p>
     </footer>
 
     <script src="{{ base_url }}js/bundle.js"></script>
@@ -265,7 +265,7 @@ const CAPTION_TEMPLATE: &str = r#"<!DOCTYPE html>
     </main>
 
     <footer class="footer">
-        <p>Powered by <a href="https://github.com/anytron/anytron">Anytron</a></p>
+        <p>Powered by <a href="https://github.com/bkero/anytron">Anytron</a></p>
     </footer>
 
     <script src="{{ base_url }}js/bundle.js"></script>

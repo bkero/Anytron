@@ -34,6 +34,9 @@ pub fn parse_str(content: &str, path: &Path) -> Result<Vec<SubtitleEntry>> {
     // Handle BOM if present
     let content = content.trim_start_matches('\u{feff}');
 
+    // Normalize line endings (CRLF -> LF) for cross-platform compatibility
+    let content = content.replace("\r\n", "\n");
+
     for (line_num, line) in content.lines().enumerate() {
         let line = line.trim();
 

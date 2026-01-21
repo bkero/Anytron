@@ -1,6 +1,6 @@
 # Anytron
 
-[![CI](https://github.com/anytron/anytron/actions/workflows/ci.yml/badge.svg)](https://github.com/anytron/anytron/actions/workflows/ci.yml)
+[![CI](https://github.com/bkero/anytron/actions/workflows/ci.yml/badge.svg)](https://github.com/bkero/anytron/actions/workflows/ci.yml)
 [![Crates.io](https://img.shields.io/crates/v/anytron.svg)](https://crates.io/crates/anytron)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
@@ -27,7 +27,7 @@ cargo install anytron
 ### From source
 
 ```bash
-git clone https://github.com/anytron/anytron.git
+git clone https://github.com/bkero/anytron.git
 cd anytron
 cargo install --path .
 ```

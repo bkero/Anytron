@@ -24,7 +24,7 @@ Please be respectful and constructive in all interactions. We want this to be a 
    ```
 3. Add the upstream remote:
    ```bash
-   git remote add upstream https://github.com/anytron/anytron.git
+   git remote add upstream https://github.com/bkero/anytron.git
    ```
 4. Build the project:
    ```bash
