@@ -1,0 +1,73 @@
+# Anytron Configuration File
+# Place this file in your show directory
+
+[show]
+# Display name of the show
+name = "My Favorite Show"
+
+# Short description for meta tags
+description = "Search quotes and generate memes from My Favorite Show"
+
+# URL-safe slug (used in page paths)
+slug = "myfavshow"
+
+# Total number of seasons (for validation, optional)
+seasons = 10
+
+[frames]
+# Frame extraction interval in milliseconds
+# Lower = more frames, larger output
+interval_ms = 1000
+
+# JPEG quality for full frames (1-100)
+quality = 85
+
+# Full-size frame width (0 = original resolution)
+frame_width = 0
+
+# Thumbnail width in pixels
+thumb_width = 320
+
+# Thumbnail quality (1-100)
+thumb_quality = 70
+
+[site]
+# Page title
+title = "Quote Search"
+
+# Base URL (use "/" for root, or "/show/" for subdirectory)
+base_url = "/"
+
+# Theme color for browser chrome
+theme_color = "#1a1a2e"
+
+# Google Analytics ID (optional)
+# analytics_id = "G-XXXXXXXXXX"
+
+# Custom CSS to append to stylesheet (optional)
+# custom_css = "body { background: #000; }"
+
+# Custom JavaScript to append to bundle (optional)
+# custom_js = "console.log('Hello!');"
+
+# Enable the meme generator feature
+enable_memes = true
+
+# Maximum search results to show
+max_results = 100
+
+# Results per page in listings
+results_per_page = 50
+
+[search]
+# Minimum query length
+min_query_length = 2
+
+# Enable fuzzy matching
+fuzzy = true
+
+# Boost factor for exact matches
+exact_boost = 2.0
+
+# Fields to index for search
+fields = ["text"]

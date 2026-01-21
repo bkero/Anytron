@@ -1,0 +1,17 @@
+WEBVTT
+
+NOTE This is a sample WebVTT file
+
+00:00:01.000 --> 00:00:04.000
+Hello from WebVTT format
+
+cue-2
+00:00:05.000 --> 00:00:08.000 line:0
+This is positioned at the top
+
+00:00:09.000 --> 00:00:12.000
+Multi-line
+subtitle text
+
+01:30.000 --> 02:00.000
+Short timestamp format (MM:SS)
