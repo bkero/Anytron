@@ -446,7 +446,7 @@ a:hover {
 "#;
 
 /// Minified lunr.js library (v2.3.9)
-/// Source: https://lunrjs.com/
+/// Source: <https://lunrjs.com/>
 const LUNR_JS_MINIFIED: &str = r#"/**
  * lunr - http://lunrjs.com - A bit like Solr, but much smaller and not as bright - 2.3.9
  * Copyright (C) 2020 Oliver Nightingale
