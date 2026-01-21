@@ -237,7 +237,10 @@ const CAPTION_TEMPLATE: &str = r#"<!DOCTYPE html>
                             <input type="range" id="meme-fontsize" min="12" max="48" value="24">
                         </label>
                     </div>
-                    <button id="meme-download" class="meme-button">Download Meme</button>
+                    <div class="meme-buttons">
+                        <button id="meme-copy" class="meme-button">Copy Image</button>
+                        <button id="meme-download" class="meme-button">Download Meme</button>
+                    </div>
                 </div>
             </div>
             {% endif %}

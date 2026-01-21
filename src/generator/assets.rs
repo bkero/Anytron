@@ -340,6 +340,12 @@ a:hover {
     font-size: 0.875rem;
 }
 
+.meme-buttons {
+    display: flex;
+    gap: var(--spacing-sm);
+    flex-wrap: wrap;
+}
+
 .meme-button {
     padding: var(--spacing-md) var(--spacing-lg);
     font-size: 1rem;
@@ -350,6 +356,8 @@ a:hover {
     color: white;
     cursor: pointer;
     transition: opacity 0.2s;
+    flex: 1;
+    min-width: 120px;
 }
 
 .meme-button:hover {
@@ -637,6 +645,7 @@ const MEME_JS: &str = r#"
         const outlineCheckbox = document.getElementById('meme-outline');
         const fontSizeSlider = document.getElementById('meme-fontsize');
         const downloadBtn = document.getElementById('meme-download');
+        const copyBtn = document.getElementById('meme-copy');
         const captionOverlay = document.getElementById('caption-overlay');
         const captionText = document.getElementById('caption-text');
         const captionImage = document.getElementById('caption-image');
@@ -651,8 +660,33 @@ const MEME_JS: &str = r#"
             }
         }
 
-        // Generate meme image
-        function generateMeme() {
+        // Word wrap helper
+        function wrapText(ctx, text, maxWidth) {
+            const words = text.split(' ');
+            const lines = [];
+            let currentLine = '';
+
+            for (const word of words) {
+                const testLine = currentLine ? currentLine + ' ' + word : word;
+                const metrics = ctx.measureText(testLine);
+
+                if (metrics.width > maxWidth && currentLine) {
+                    lines.push(currentLine);
+                    currentLine = word;
+                } else {
+                    currentLine = testLine;
+                }
+            }
+
+            if (currentLine) {
+                lines.push(currentLine);
+            }
+
+            return lines;
+        }
+
+        // Generate composited image as blob (shared by download and copy)
+        function generateCompositeImage(callback) {
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
             const img = new Image();
@@ -682,7 +716,6 @@ const MEME_JS: &str = r#"
                     const lines = wrapText(ctx, text, maxWidth);
 
                     // Calculate Y position (bottom of image)
-                    const totalHeight = lines.length * lineHeight;
                     let y = canvas.height - padding;
 
                     // Draw each line (from bottom to top)
@@ -704,49 +737,112 @@ const MEME_JS: &str = r#"
                     }
                 }
 
-                // Download
-                const link = document.createElement('a');
-                link.download = 'meme.png';
-                link.href = canvas.toDataURL('image/png');
-                link.click();
+                callback(canvas);
             };
 
             img.onerror = function() {
-                alert('Failed to load image for meme generation.');
+                callback(null);
             };
 
             img.src = imageSrc;
         }
 
-        // Word wrap helper
-        function wrapText(ctx, text, maxWidth) {
-            const words = text.split(' ');
-            const lines = [];
-            let currentLine = '';
-
-            for (const word of words) {
-                const testLine = currentLine ? currentLine + ' ' + word : word;
-                const metrics = ctx.measureText(testLine);
-
-                if (metrics.width > maxWidth && currentLine) {
-                    lines.push(currentLine);
-                    currentLine = word;
-                } else {
-                    currentLine = testLine;
+        // Copy image with caption to clipboard
+        function copyImageWithCaption() {
+            generateCompositeImage(function(canvas) {
+                if (!canvas) {
+                    console.error('Failed to generate image for copy');
+                    return;
                 }
-            }
 
-            if (currentLine) {
-                lines.push(currentLine);
-            }
+                canvas.toBlob(function(blob) {
+                    if (!blob) {
+                        console.error('Failed to create blob');
+                        return;
+                    }
 
-            return lines;
+                    try {
+                        navigator.clipboard.write([
+                            new ClipboardItem({ 'image/png': blob })
+                        ]).then(function() {
+                            // Show brief feedback
+                            showCopyFeedback();
+                        }).catch(function(err) {
+                            console.error('Failed to copy image: ', err);
+                        });
+                    } catch (err) {
+                        console.error('Clipboard API not supported: ', err);
+                    }
+                }, 'image/png');
+            });
+        }
+
+        // Show visual feedback when image is copied
+        function showCopyFeedback() {
+            const container = document.querySelector('.caption-image-container');
+            if (!container) return;
+
+            const feedback = document.createElement('div');
+            feedback.textContent = 'Copied!';
+            feedback.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.8);color:white;padding:10px 20px;border-radius:5px;font-size:18px;z-index:1000;pointer-events:none;';
+            container.style.position = 'relative';
+            container.appendChild(feedback);
+
+            setTimeout(function() {
+                feedback.remove();
+            }, 1000);
         }
 
         // Event listeners
         textArea.addEventListener('input', updatePreview);
         fontSizeSlider.addEventListener('input', updatePreview);
-        downloadBtn.addEventListener('click', generateMeme);
+        downloadBtn.addEventListener('click', function() {
+            generateCompositeImage(function(canvas) {
+                if (!canvas) {
+                    alert('Failed to load image for meme generation.');
+                    return;
+                }
+                const link = document.createElement('a');
+                link.download = 'meme.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            });
+        });
+
+        // Copy button click handler
+        if (copyBtn) {
+            copyBtn.addEventListener('click', function() {
+                copyImageWithCaption();
+            });
+        }
+
+        // Handle copy event on the image
+        if (captionImage) {
+            captionImage.addEventListener('copy', function(e) {
+                e.preventDefault();
+                copyImageWithCaption();
+            });
+
+            // Also handle Ctrl+C / Cmd+C when image is focused or selected
+            document.addEventListener('keydown', function(e) {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
+                    // Check if the image or its container is in the selection
+                    const selection = window.getSelection();
+                    const container = document.querySelector('.caption-image-container');
+                    if (container && (container.contains(document.activeElement) ||
+                        (selection && selection.rangeCount > 0 && container.contains(selection.anchorNode)))) {
+                        e.preventDefault();
+                        copyImageWithCaption();
+                    }
+                }
+            });
+
+            // Handle right-click context menu copy
+            captionImage.addEventListener('contextmenu', function(e) {
+                // We can't override the context menu copy directly,
+                // but we can add a click handler for a custom copy button
+            });
+        }
 
         // Initial preview update
         updatePreview();
