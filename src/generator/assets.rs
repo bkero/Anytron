@@ -23,7 +23,6 @@ impl AssetBundler {
 
     /// Write the bundled JavaScript
     pub fn write_js(&self, output_path: &Path) -> Result<()> {
-        // Bundle lunr.js + search.js + meme.js
         let bundle = format!("{}\n{}\n{}", LUNR_JS_MINIFIED, SEARCH_JS, MEME_JS);
 
         std::fs::write(output_path, bundle).map_err(|e| AnytronError::FileWrite {

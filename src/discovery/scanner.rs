@@ -28,7 +28,9 @@ const ENGLISH_PATTERNS: &[&str] = &[
     "-english.",
     ".en-us.",
     ".en-gb.",
-    ".en_us.",
+    ".en-us.",
+    ".en-gb.",
+    ".en-us.",
     ".en_gb.",
 ];
 

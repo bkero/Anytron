@@ -82,7 +82,8 @@ impl SearchIndexer {
 
     /// Build the search index from episodes and their subtitle entries
     pub fn build_index(&self, episodes: &[(Episode, Vec<SubtitleEntry>)]) -> Result<SearchIndex> {
-        let mut entries = Vec::new();
+        let total_entries: usize = episodes.iter().map(|(_, subs)| subs.len()).sum();
+        let mut entries = Vec::with_capacity(total_entries);
 
         for (episode, subs) in episodes {
             let episode_id = episode.id.to_string();
@@ -91,7 +92,6 @@ impl SearchIndexer {
                 let timestamp = entry.midpoint().0;
                 let id = format!("{}-{}", episode_id, timestamp);
 
-                // Build image paths
                 let frame = format!("img/frames/{}/{}.jpg", episode_id, timestamp);
                 let thumb = format!("img/thumbs/{}/{}.jpg", episode_id, timestamp);
 

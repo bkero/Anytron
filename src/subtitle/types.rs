@@ -1,9 +1,16 @@
 //! Subtitle data types
 
+use lazy_static::lazy_static;
+use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::fmt;
 
 use crate::error::{AnytronError, Result};
+
+lazy_static! {
+    static ref RE_HTML: Regex = Regex::new(r"<[^>]+>").unwrap();
+    static ref RE_ASS: Regex = Regex::new(r"\{[^}]+\}").unwrap();
+}
 
 /// Timestamp in milliseconds
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
@@ -55,6 +62,31 @@ impl Timestamp {
             .parse()
             .map_err(|_| AnytronError::InvalidTimestamp(format!("Invalid millis: {}", parts[3])))?;
 
+        if hours > 23 {
+            return Err(AnytronError::InvalidTimestamp(format!(
+                "Invalid hours (must be 0-23): {}",
+                hours
+            )));
+        }
+        if minutes > 59 {
+            return Err(AnytronError::InvalidTimestamp(format!(
+                "Invalid minutes (must be 0-59): {}",
+                minutes
+            )));
+        }
+        if seconds > 60 {
+            return Err(AnytronError::InvalidTimestamp(format!(
+                "Invalid seconds (must be 0-60): {}",
+                seconds
+            )));
+        }
+        if millis > 999 {
+            return Err(AnytronError::InvalidTimestamp(format!(
+                "Invalid milliseconds (must be 0-999): {}",
+                millis
+            )));
+        }
+
         Ok(Self::from_hms_ms(hours, minutes, seconds, millis))
     }
 
@@ -81,6 +113,31 @@ impl Timestamp {
         let centis: u64 = parts[3].parse().map_err(|_| {
             AnytronError::InvalidTimestamp(format!("Invalid centiseconds: {}", parts[3]))
         })?;
+
+        if hours > 23 {
+            return Err(AnytronError::InvalidTimestamp(format!(
+                "Invalid hours (must be 0-23): {}",
+                hours
+            )));
+        }
+        if minutes > 59 {
+            return Err(AnytronError::InvalidTimestamp(format!(
+                "Invalid minutes (must be 0-59): {}",
+                minutes
+            )));
+        }
+        if seconds > 60 {
+            return Err(AnytronError::InvalidTimestamp(format!(
+                "Invalid seconds (must be 0-60): {}",
+                seconds
+            )));
+        }
+        if centis > 99 {
+            return Err(AnytronError::InvalidTimestamp(format!(
+                "Invalid centiseconds (must be 0-99): {}",
+                centis
+            )));
+        }
 
         Ok(Self::from_hms_ms(hours, minutes, seconds, centis * 10))
     }
@@ -187,17 +244,9 @@ impl SubtitleEntry {
 
     /// Remove formatting tags and normalize whitespace
     fn clean_text(text: &str) -> String {
-        // Remove HTML-style tags
-        let re_html = regex::Regex::new(r"<[^>]+>").unwrap();
-        let text = re_html.replace_all(text, "");
-
-        // Remove ASS formatting tags like {\pos(...)} {\an8} etc.
-        let re_ass = regex::Regex::new(r"\{[^}]+\}").unwrap();
-        let text = re_ass.replace_all(&text, "");
-
-        // Normalize whitespace
+        let text = RE_HTML.replace_all(text, "");
+        let text = RE_ASS.replace_all(&text, "");
         let text = text.split_whitespace().collect::<Vec<_>>().join(" ");
-
         text.trim().to_string()
     }
 

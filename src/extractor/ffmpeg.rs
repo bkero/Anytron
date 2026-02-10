@@ -77,12 +77,10 @@ impl FrameExtractor {
         output_dir: &Path,
         progress: &ProgressBar,
     ) -> Result<()> {
-        // Check FFmpeg availability
         Self::check_ffmpeg()?;
 
         let episode_id = episode.id.to_string();
 
-        // Create output directories
         let frames_dir = output_dir.join("img").join("frames").join(&episode_id);
         let thumbs_dir = output_dir.join("img").join("thumbs").join(&episode_id);
 
@@ -95,7 +93,6 @@ impl FrameExtractor {
             source: e,
         })?;
 
-        // Build extraction tasks
         let tasks: Vec<ExtractionTask> = entries
             .iter()
             .map(|entry| {
@@ -112,15 +109,13 @@ impl FrameExtractor {
             })
             .collect();
 
-        // Configure thread pool if jobs specified
         if let Some(num_jobs) = self.jobs {
             rayon::ThreadPoolBuilder::new()
                 .num_threads(num_jobs)
                 .build_global()
-                .ok(); // Ignore error if already built
+                .ok();
         }
 
-        // Extract frames in parallel
         let results: Vec<Result<()>> = tasks
             .par_iter()
             .map(|task| {
@@ -130,7 +125,6 @@ impl FrameExtractor {
             })
             .collect();
 
-        // Check for errors
         for result in results {
             result?;
         }

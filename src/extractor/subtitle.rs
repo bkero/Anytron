@@ -1,6 +1,10 @@
 //! Subtitle extraction from video container files (MKV, MP4, etc.)
 
 use serde::Deserialize;
+use std::collections::hash_map::DefaultHasher;
+use std::fs::File;
+use std::hash::{Hash, Hasher};
+use std::io::Read;
 use std::path::Path;
 use std::process::Command;
 
@@ -246,6 +250,23 @@ impl SubtitleExtractor {
         video_path: &Path,
         output_dir: &Path,
     ) -> Result<Option<std::path::PathBuf>> {
+        let video_hash = {
+            let mut file = File::open(video_path)?;
+            let mut content = Vec::new();
+            file.read_to_end(&mut content)?;
+            let mut hasher = DefaultHasher::new();
+            content.len().hash(&mut hasher);
+            format!("{:x}", hasher.finish())
+        };
+
+        let cache_key = format!("{}.srt", video_hash);
+        let cache_path = output_dir.join(&cache_key);
+
+        if cache_path.exists() {
+            log::debug!("Using cached subtitle: {:?}", cache_path);
+            return Ok(Some(cache_path));
+        }
+
         let streams = Self::probe_streams(video_path)?;
 
         if streams.is_empty() {
@@ -261,16 +282,16 @@ impl SubtitleExtractor {
 
         for stream in &streams {
             log::debug!(
-                "  Stream {}: codec={}, lang={:?}, title={:?}, default={}, forced={}, sdh={}, score={}",
-                stream.index,
-                stream.codec,
-                stream.language,
-                stream.title,
-                stream.is_default,
-                stream.is_forced,
-                stream.appears_to_be_sdh(),
-                stream.priority_score()
-            );
+                 "  Stream {}: codec={}, lang={:?}, title={:?}, default={}, forced={}, sdh={}, score={}",
+                 stream.index,
+                 stream.codec,
+                 stream.language,
+                 stream.title,
+                 stream.is_default,
+                 stream.is_forced,
+                 stream.appears_to_be_sdh(),
+                 stream.priority_score()
+             );
         }
 
         let best = Self::select_best_stream(&streams)
@@ -283,14 +304,12 @@ impl SubtitleExtractor {
             video_path
         );
 
-        // Determine output extension
         let ext = match best.codec.as_str() {
             "ass" | "ssa" => "ass",
             "webvtt" | "vtt" => "vtt",
             _ => "srt",
         };
 
-        // Create output filename based on video filename
         let video_stem = video_path
             .file_stem()
             .and_then(|s| s.to_str())
@@ -298,7 +317,6 @@ impl SubtitleExtractor {
 
         let output_path = output_dir.join(format!("{}.{}", video_stem, ext));
 
-        // Create output directory if needed
         std::fs::create_dir_all(output_dir).map_err(|e| AnytronError::OutputDir {
             path: output_dir.to_path_buf(),
             source: e,
