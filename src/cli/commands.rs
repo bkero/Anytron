@@ -279,19 +279,5 @@ fn guess_content_type(path: &Path) -> String {
 
 /// Open URL in default browser
 fn open_browser(url: &str) -> Result<()> {
-    #[cfg(target_os = "macos")]
-    {
-        std::process::Command::new("open").arg(url).spawn()?;
-    }
-    #[cfg(target_os = "linux")]
-    {
-        std::process::Command::new("xdg-open").arg(url).spawn()?;
-    }
-    #[cfg(target_os = "windows")]
-    {
-        std::process::Command::new("cmd")
-            .args(["/C", "start", url])
-            .spawn()?;
-    }
-    Ok(())
+    open::that(url).with_context(|| format!("Failed to open browser for URL: {}", url))
 }

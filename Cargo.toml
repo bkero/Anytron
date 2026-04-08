@@ -50,6 +50,9 @@ walkdir = "2"
 regex = "1"
 lazy_static = "1"
 
+# Open browser functionality
+open = "5"
+
 # HTTP server for serve command
 tiny_http = "0.12"
 
